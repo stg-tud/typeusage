@@ -61,6 +61,49 @@
 					</descriptorRefs>
 				</configuration>
 			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>jadet-project-src</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>de.tud.stg.mubench.DetectOnlyRunner</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<finalName>dmmc-detect-only</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jadet-pattern-src</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>de.tud.stg.mubench.MineAndDetectRunner</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<finalName>dmmc-mine-and-detect</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
     </plugins>
   </build>
 
