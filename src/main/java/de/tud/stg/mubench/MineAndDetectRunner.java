@@ -49,27 +49,25 @@ public class MineAndDetectRunner {
 
 			int nanalyzed = 0;
 
-			System.out.println("\ncomputing precision and recall...");
+			System.out.println("finding usages with a strangeness of more than " + STRANGENESS_THRESHOLD + "...");
 			for (ObjectTrace record : dataset) {
-				{
-					System.out.print("\r" + nanalyzed + "/" + dataset.size());
+				System.out.print("\r" + nanalyzed + "/" + dataset.size());
 
-					engine.query(record);
-					double strangeness = record.strangeness();
-					if (strangeness >= STRANGENESS_THRESHOLD) {
-						br.write("file: ");
-						br.write(record.getLocation().replaceFirst("location:", "").replace('.', '/'));
+				engine.query(record);
+				double strangeness = record.strangeness();
+				if (strangeness >= STRANGENESS_THRESHOLD) {
+					br.write("file: ");
+					br.write(record.getLocation().replaceFirst("location:", "").replace('.', '/'));
+					br.write("\n");
+					br.write("missingcalls:\n");
+					for (String missingcall : record.missingcalls.keySet()) {
+						br.write("  - ");
+						br.write(missingcall.replaceFirst("call:", ""));
 						br.write("\n");
-						br.write("missingcalls:\n");
-						for (String missingcall : record.missingcalls.keySet()) {
-							br.write("  - ");
-							br.write(missingcall.replaceFirst("call:", ""));
-							br.write("\n");
-						}
-						br.write("\n---\n");
 					}
-					nanalyzed++;
+					br.write("\n---\n");
 				}
+				nanalyzed++;
 			}
 		} finally {
 			if (br != null) {
