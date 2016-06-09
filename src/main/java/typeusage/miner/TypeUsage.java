@@ -60,7 +60,7 @@ public class TypeUsage {
 
   @Override
   public String toString() {
-    return repTypeMethodCalls();
+    return repLocationContextTypeMethodCalls();
   }
 
   public String repLocationContextTypeMethodCalls() {

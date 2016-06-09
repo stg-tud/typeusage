@@ -1,15 +1,21 @@
 package de.tud.stg.mubench;
 
+import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Paths;
 
+import de.tu_darmstadt.stg.mubench.cli.ArgParser;
+import de.tu_darmstadt.stg.mubench.cli.DetectorArgs;
 import typeusage.miner.FileTypeUsageCollector;
 
 public class Runner {
 
 	public static void main(String[] args) throws Exception {
-		String projectClasspath = "target/classes/";
-		String modelFilename = "output.dat";
-		String findingsFile = "findings.yml";
+		DetectorArgs detectorArgs = ArgParser.parse(args);
+		
+		String projectClasspath = detectorArgs.projectClassPath;
+		File findingsFile = new File(detectorArgs.findingsFile);
+		String modelFilename = Paths.get(findingsFile.getParent(), "output.dat").toString();
 
 		FileTypeUsageCollector c = new FileTypeUsageCollector(modelFilename);
 		try {

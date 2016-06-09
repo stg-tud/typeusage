@@ -36,12 +36,12 @@ public class Detector {
 					// we really can not say anything
 				} else if (strangeness >= strangenessThreshold) {
 					output.append("file: ");
-					output.append(record.getLocation());
+					output.append(record.getLocation().replaceFirst("location:", "").replace('.', '/'));
 					output.append("\n");
 					output.append("missingcalls:\n");
 					for (String missingcall : record.missingcalls.keySet()) {
 						output.append("  - ");
-						output.append(missingcall);
+						output.append(missingcall.replaceFirst("call:", ""));
 						output.append("\n");
 					}
 					output.append("\n---\n");
