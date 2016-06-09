@@ -2,7 +2,6 @@ package de.tud.stg.mubench;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.nio.file.Paths;
 
 import de.tu_darmstadt.stg.mubench.cli.ArgParser;
 import de.tu_darmstadt.stg.mubench.cli.DetectorArgs;
@@ -15,7 +14,7 @@ public class Runner {
 		
 		String projectClasspath = detectorArgs.projectClassPath;
 		File findingsFile = new File(detectorArgs.findingsFile);
-		String modelFilename = Paths.get(findingsFile.getParent(), "output.dat").toString();
+		String modelFilename = new File(findingsFile.getParent(), "output.dat").getAbsolutePath();
 
 		FileTypeUsageCollector c = new FileTypeUsageCollector(modelFilename);
 		try {
