@@ -14,7 +14,9 @@ import de.tud.stg.analysis.engine.EcoopEngine;
 import typeusage.miner.FileTypeUsageCollector;
 
 public class MineAndDetectRunner {
-	private static final double STRANGENESS_THRESHOLD = 0.8;
+	// values from the paper
+	private static final double STRANGENESS_THRESHOLD = 0.5;
+	private static final int K = 1;
 
 	public static void main(String[] args) throws Exception {
 		DetectorArgs detectorArgs = ArgParser.parse(args);
@@ -43,6 +45,7 @@ public class MineAndDetectRunner {
 			List<ObjectTrace> dataset = new DatasetReader().readObjects(modelFilename);
 			EcoopEngine engine = new EcoopEngine(dataset);
 			engine.dontConsiderContext();
+			engine.setOption_k(K);
 
 			int nanalyzed = 0;
 
