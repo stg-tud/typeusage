@@ -40,14 +40,19 @@ public class TypeUsageCollector implements IMethodCallCollector {
     Options.v().set_keep_line_number(true);
     Options.v().set_output_format(Options.output_format_none);
 
-    String[] myArgs = {
+    String[] myArgs = buildSootArgs();
+
+    soot.Main.main(myArgs);
+    return this;
+  }
+
+  protected String[] buildSootArgs() {
+	String[] myArgs = {
         "-soot-classpath", getClassPath(),
         "-pp",// prepend is not required
         "-process-dir", getProcessDir(),
     };
-
-    soot.Main.main(myArgs);
-    return this;
+	return myArgs;
   }
 
   final List<String> classpath = new ArrayList<String>();
