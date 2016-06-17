@@ -51,22 +51,16 @@ public class MineAndDetectRunner {
 
 			System.out.println("finding usages with a strangeness of more than " + STRANGENESS_THRESHOLD + "...");
 			for (ObjectTrace record : dataset) {
-				System.out.print("\r" + nanalyzed + "/" + dataset.size());
+				System.out.print(nanalyzed + "/" + dataset.size());
 
 				engine.query(record);
 				double strangeness = record.strangeness();
 				if (strangeness >= STRANGENESS_THRESHOLD) {
-					br.write("file: ");
-					br.write(record.getLocation().replaceFirst("location:", "").replace('.', '/'));
-					br.write("\n");
-					br.write("missingcalls:\n");
-					for (String missingcall : record.missingcalls.keySet()) {
-						br.write("  - ");
-						br.write(missingcall.replaceFirst("call:", ""));
-						br.write("\n");
-					}
+					System.out.print(" -> violation!");
+					br.write(ObjectTraceUtils.toYaml(record));
 					br.write("\n---\n");
 				}
+				System.out.println();
 				nanalyzed++;
 			}
 		} finally {
