@@ -21,10 +21,10 @@ public class DetectOnlyRunner {
 	public static void main(String[] args) throws Exception {
 		DetectorArgs detectorArgs = ArgParser.parse(args);
 
-		String projectSourcePath = detectorArgs.projectSrcPath;
-		String projectClasspath = detectorArgs.projectClassPath;
-		String patternClasspath = detectorArgs.patternsClassPath;
-		File findingsFile = new File(detectorArgs.findingsFile);
+		String projectSourcePath = detectorArgs.getPatternsSrcPath();
+		String projectClasspath = detectorArgs.getProjectClassPath();
+		String patternClasspath = detectorArgs.getPatternsClassPath();
+		File findingsFile = new File(detectorArgs.getFindingsFile());
 		String modelFilename = new File(findingsFile.getParent(), "model.dat").getAbsolutePath();
 
 		List<ObjectTrace> all = collectTypeUsages(patternClasspath, projectClasspath, modelFilename);

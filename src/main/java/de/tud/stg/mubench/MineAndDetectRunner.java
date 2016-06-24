@@ -21,8 +21,8 @@ public class MineAndDetectRunner {
 	public static void main(String[] args) throws Exception {
 		DetectorArgs detectorArgs = ArgParser.parse(args);
 
-		String projectClasspath = detectorArgs.projectClassPath;
-		File findingsFile = new File(detectorArgs.findingsFile);
+		String projectClasspath = detectorArgs.getProjectClassPath();
+		File findingsFile = new File(detectorArgs.getFindingsFile());
 		String modelFilename = new File(findingsFile.getParent(), "output.dat").getAbsolutePath();
 
 		FileTypeUsageCollector c = new FileTypeUsageCollector(modelFilename);
