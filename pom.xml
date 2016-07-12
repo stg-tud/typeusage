@@ -33,7 +33,7 @@
     <dependency>
 			<groupId>de.tu-darmstadt.stg</groupId>
 			<artifactId>mubench.cli</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>0.0.3-SNAPSHOT</version>
 	</dependency>
   </dependencies>
 
@@ -62,7 +62,7 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
-							<finalName>dmmc-detect-only</finalName>
+							<finalName>dmmc-do</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 						</configuration>
 						<phase>package</phase>
@@ -81,7 +81,7 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
-							<finalName>dmmc-mine-and-detect</finalName>
+							<finalName>dmmc</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 						</configuration>
 						<phase>package</phase>

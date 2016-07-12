@@ -1,13 +1,12 @@
 package de.tud.stg.mubench;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
 import de.tu_darmstadt.stg.mubench.cli.ArgParser;
 import de.tu_darmstadt.stg.mubench.cli.DetectorArgs;
+import de.tu_darmstadt.stg.mubench.cli.DetectorOutput;
 import de.tud.stg.analysis.DatasetReader;
 import de.tud.stg.analysis.ObjectTrace;
 import de.tud.stg.analysis.engine.EcoopEngine;
@@ -20,10 +19,11 @@ public class MineAndDetectRunner {
 
 	public static void main(String[] args) throws Exception {
 		DetectorArgs detectorArgs = ArgParser.parse(args);
+		DetectorOutput output = new DetectorOutput(detectorArgs);
 
 		String projectClasspath = detectorArgs.getProjectClassPath();
-		File findingsFile = new File(detectorArgs.getFindingsFile());
-		String modelFilename = new File(findingsFile.getParent(), "output.dat").getAbsolutePath();
+		String modelFilename = new File(new File(detectorArgs.getFindingsFile()).getParent(), "output.dat")
+				.getAbsolutePath();
 
 		FileTypeUsageCollector c = new FileTypeUsageCollector(modelFilename);
 		try {
@@ -33,42 +33,31 @@ public class MineAndDetectRunner {
 			c.close();
 		}
 
-		detect(modelFilename, findingsFile);
+		detect(modelFilename, output);
 	}
 
-	private static void detect(String modelFilename, File findingsFile) throws IOException, Exception {
-		FileWriter writer = new FileWriter(findingsFile);
-		BufferedWriter br = null;
-		try {
-			br = new BufferedWriter(writer);
+	private static void detect(String modelFilename, DetectorOutput output) throws IOException, Exception {
+		List<ObjectTrace> dataset = new DatasetReader().readObjects(modelFilename);
+		EcoopEngine engine = new EcoopEngine(dataset);
+		engine.dontConsiderContext();
+		engine.setOption_k(K);
 
-			List<ObjectTrace> dataset = new DatasetReader().readObjects(modelFilename);
-			EcoopEngine engine = new EcoopEngine(dataset);
-			engine.dontConsiderContext();
-			engine.setOption_k(K);
+		int nanalyzed = 0;
 
-			int nanalyzed = 0;
+		System.out.println("finding usages with a strangeness of more than " + STRANGENESS_THRESHOLD + "...");
+		for (ObjectTrace record : dataset) {
+			System.out.print(nanalyzed + "/" + dataset.size());
 
-			System.out.println("finding usages with a strangeness of more than " + STRANGENESS_THRESHOLD + "...");
-			for (ObjectTrace record : dataset) {
-				System.out.print(nanalyzed + "/" + dataset.size());
-
-				engine.query(record);
-				double strangeness = record.strangeness();
-				if (strangeness >= STRANGENESS_THRESHOLD) {
-					System.out.print(" -> violation!");
-					br.write(ObjectTraceUtils.toYaml(record));
-					br.write("\n---\n");
-				}
-				System.out.println();
-				nanalyzed++;
+			engine.query(record);
+			double strangeness = record.strangeness();
+			if (strangeness >= STRANGENESS_THRESHOLD) {
+				System.out.print(" -> violation!");
+				output.add(ObjectTraceUtils.toFinding(record));
 			}
-		} finally {
-			if (br != null) {
-				br.close();
-			} else {
-				writer.close();
-			}
+			System.out.println();
+			nanalyzed++;
 		}
+		
+		output.write();
 	}
 }
