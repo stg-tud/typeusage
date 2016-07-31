@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import soot.PackManager;
 import soot.SootMethod;
 import soot.Transform;
+import soot.Type;
 import soot.options.Options;
 
 /**
@@ -72,13 +73,35 @@ public class TypeUsageCollector implements IMethodCallCollector {
   //  mainObj.appOut_C.write(aVariable
 
   @Override
-  public String translateSignature(SootMethod meth) {
+  public String translateCallSignature(SootMethod meth) {
     // can also be meth.getSignature
     return meth.getName() + "()";
     // or             aVariable.addMethodCall(invokeExpr.getMethod().getName());
 
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public String translateContextSignature(SootMethod meth) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(meth.getName()).append("(");
+    boolean firstParam = true;
+    for (Type pType : ((List<Type>) meth.getParameterTypes())) {
+      if (!firstParam) {
+        sb.append(",");
+      }
+      String typeName = pType.toString();
+      int lastIndexOfDot = typeName.lastIndexOf('.');
+      if (lastIndexOfDot > -1) {
+        typeName = typeName.substring(lastIndexOfDot + 1);
+      }
+      sb.append(typeName);
+      firstParam = false;
+    }
+    sb.append(")");
+    return sb.toString();
+  }
+  
   public String getProcessDir() {
     return dirToProcess;
   }

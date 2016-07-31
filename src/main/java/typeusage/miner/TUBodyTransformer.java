@@ -42,7 +42,7 @@ public class TUBodyTransformer extends BodyTransformer {
   protected void internalTransform(Body body, String phase,
       @SuppressWarnings("rawtypes") Map options) {
 
-    String methodContext = collector.translateSignature(body.getMethod());
+    String methodContext = collector.translateContextSignature(body.getMethod());
 
     aliasInfo = new LocalMustAliasAnalysis(
         new ExceptionalUnitGraph(body));
@@ -94,7 +94,7 @@ public class TUBodyTransformer extends BodyTransformer {
       ) {
         correspondingTypeUsage.underlyingLocals.add(call1);
         InvokeExpr invokeExpr = call1.s.getInvokeExpr();
-        correspondingTypeUsage.addMethodCall(collector.translateSignature(invokeExpr.getMethod()));
+        correspondingTypeUsage.addMethodCall(collector.translateCallSignature(invokeExpr.getMethod()));
         collector.debug("adding " + call1 + " to " + correspondingTypeUsage);
       } else {
 
@@ -117,7 +117,7 @@ public class TUBodyTransformer extends BodyTransformer {
         aNewTypeUsage.underlyingLocals.add(call1);
 
         InvokeExpr invokeExpr = call1.s.getInvokeExpr();
-        aNewTypeUsage.addMethodCall(collector.translateSignature(invokeExpr.getMethod()));
+        aNewTypeUsage.addMethodCall(collector.translateCallSignature(invokeExpr.getMethod()));
 
         if (type instanceof NullType) {
           aNewTypeUsage.type = invokeExpr.getMethod().getDeclaringClass().getType().toString();

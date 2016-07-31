@@ -13,7 +13,9 @@ public interface IMethodCallCollector {
    * returnType name
    * etc.
    */
-  String translateSignature(SootMethod meth);
+  String translateCallSignature(SootMethod meth);
+  
+  String translateContextSignature(SootMethod meth);
   
   /** if a type-usage"s class' fully-qualified name starts with this prefix, keep it */
   String getPackagePrefixToKeep();
