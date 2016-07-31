@@ -2,8 +2,10 @@ package de.tud.stg.mubench;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import de.tu_darmstadt.stg.mubench.cli.DetectorArgs;
 import de.tu_darmstadt.stg.mubench.cli.DetectorFinding;
@@ -57,13 +59,35 @@ public class Runner {
 		String method = getMethodName(target);
 		DetectorFinding finding = output.add(file, method);
 		
-		LinkedList<String> missingcalls = new LinkedList<String>();
+		finding.put("type", getType(target));
+		finding.put("firstcallline", getFirstCallLine(target));
+		finding.put("presentcalls", getPresentCalls(target));
+		finding.put("missingcalls", getMissingCalls(target));
+		finding.put("strangeness", Double.toString(target.strangeness()));
+	}
+
+	public static String getType(ObjectTrace target) {
+		return target.getType().split(":")[1];
+	}
+
+	private static String getFirstCallLine(ObjectTrace target) {
+		return target.getLocation().split(":")[2];
+	}
+
+	public static Set<String> getPresentCalls(ObjectTrace target) {
+		Set<String> presentCalls = new HashSet<String>();
+		for (String call : target.calls) {
+			presentCalls.add(call.split(":")[1]);
+		}
+		return presentCalls;
+	}
+
+	public static List<String> getMissingCalls(ObjectTrace target) {
+		List<String> missingcalls = new LinkedList<String>();
 		for (String missingcall : target.missingcalls.keySet()) {
 			missingcalls.add(missingcall.split(":")[1]);
 		}
-		
-		finding.put("missingcalls", missingcalls);
-		finding.put("strangeness", Double.toString(target.strangeness()));
+		return missingcalls;
 	}
 
 	private static String getSourceFileName(ObjectTrace target) {
@@ -71,8 +95,7 @@ public class Runner {
 	}
 
 	private static String getMethodName(ObjectTrace target) {
-		String context = target.getContext().split(":")[1];
-		return context.substring(0, context.indexOf('('));
+		return target.getContext().split(":")[1].replace(",", ", ");
 	}
 
 }
