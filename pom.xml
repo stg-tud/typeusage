@@ -15,7 +15,7 @@
     <dependency>
       <groupId>soot</groupId>
       <artifactId>soot</artifactId>
-      <version>2.5.1-SNAPSHOT</version>
+      <version>2.5.0</version>
     </dependency>
 
     <dependency>
