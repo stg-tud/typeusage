@@ -17,30 +17,31 @@ import typeusage.miner.FileTypeUsageCollector;
 
 public class Runner {
 
-	public static void run(DetectorArgs detectorArgs, String modelFilename,
-			FileTypeUsageCollector usageCollector, double minStrangeness, int maxNumberOfMissingCalls) throws Exception, IOException, FileNotFoundException {
+	public static void run(DetectorArgs detectorArgs, String modelFilename, FileTypeUsageCollector usageCollector,
+			double minStrangeness, int maxNumberOfMissingCalls) throws Exception, IOException, FileNotFoundException {
 		try {
 			usageCollector.run();
 		} finally {
 			usageCollector.close();
 		}
-	
+
 		Runner.detect(modelFilename, detectorArgs.getFindingsFile(), minStrangeness, maxNumberOfMissingCalls);
 	}
 
-	static void detect(String modelFilename, String outputFile, double minStrangeness, int maxNumberOfMissingCalls) throws IOException, Exception {
+	static void detect(String modelFilename, String outputFile, double minStrangeness, int maxNumberOfMissingCalls)
+			throws IOException, Exception {
 		DetectorOutput output = new DetectorOutput(outputFile);
 		List<ObjectTrace> dataset = new DatasetReader().readObjects(modelFilename);
 		EcoopEngine engine = new EcoopEngine(dataset);
 		engine.dontConsiderContext();
 		engine.setOption_k(maxNumberOfMissingCalls);
-	
+
 		int nanalyzed = 0;
-	
+
 		System.out.println("finding usages with a strangeness of more than " + minStrangeness + "...");
 		for (ObjectTrace record : dataset) {
 			System.out.print(nanalyzed + "/" + dataset.size());
-	
+
 			engine.query(record);
 			double strangeness = record.strangeness();
 			if (strangeness >= minStrangeness) {
@@ -50,15 +51,15 @@ public class Runner {
 			System.out.println();
 			nanalyzed++;
 		}
-		
+
 		output.write();
 	}
-	
+
 	private static void addFinding(DetectorOutput output, ObjectTrace target) throws IOException {
 		String file = getSourceFileName(target);
 		String method = getMethodName(target);
 		DetectorFinding finding = output.add(file, method);
-		
+
 		finding.put("type", getType(target));
 		finding.put("firstcallline", getFirstCallLine(target));
 		finding.put("presentcalls", getPresentCalls(target));
@@ -71,7 +72,12 @@ public class Runner {
 	}
 
 	private static String getFirstCallLine(ObjectTrace target) {
-		return target.getLocation().split(":")[2];
+		String[] locationInfo = target.getLocation().split(":");
+		if (locationInfo.length > 2) {
+			return locationInfo[2];
+		} else {
+			return "unknown";
+		}
 	}
 
 	public static Set<String> getPresentCalls(ObjectTrace target) {
@@ -91,7 +97,7 @@ public class Runner {
 	}
 
 	private static String getSourceFileName(ObjectTrace target) {
-		return target.getLocation().split(":")[1].replace('.', '/') + ".java";
+		return DetectorFinding.convertFQNtoFileName(target.getLocation().split(":")[1]);
 	}
 
 	private static String getMethodName(ObjectTrace target) {
