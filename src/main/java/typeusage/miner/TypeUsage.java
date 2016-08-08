@@ -62,6 +62,10 @@ public class TypeUsage {
   public String toString() {
     return repLocationContextTypeMethodCalls();
   }
+  
+  public String getLocation() {
+	return location;
+  }
 
   public String repLocationContextTypeMethodCalls() {
     String sep = " ";
