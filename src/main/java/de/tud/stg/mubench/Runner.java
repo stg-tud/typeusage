@@ -76,11 +76,11 @@ public class Runner {
 	}
 
 	public static void mineAndDetect(DetectorArgs detectorArgs) throws FileNotFoundException, Exception, IOException {
-		String trainingClassPath = detectorArgs.getTrainingClassPath();
+		String targetClassPath = detectorArgs.getTargetClassPath();
 		String modelFilename = new File(new File(detectorArgs.getFindingsFile()).getParent(), "output.dat")
 				.getAbsolutePath();
 		FileTypeUsageCollector collector = new FileTypeUsageCollector(modelFilename);
-		collector.setDirToProcess(trainingClassPath);
+		collector.setDirToProcess(targetClassPath);
 		Runner.run(detectorArgs, modelFilename, collector,
 				// using values from the paper
 				/* strangeness threshold = */ 0.5,
