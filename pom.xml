@@ -33,7 +33,7 @@
     <dependency>
 			<groupId>de.tu-darmstadt.stg</groupId>
 			<artifactId>mubench.cli</artifactId>
-			<version>0.0.5-SNAPSHOT</version>
+			<version>0.0.6-SNAPSHOT</version>
 	</dependency>
   </dependencies>
 
@@ -52,30 +52,11 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>detect-only</id>
+						<id>dmmc</id>
 						<configuration>
 							<archive>
 								<manifest>
-									<mainClass>de.tud.stg.mubench.DetectOnlyRunner</mainClass>
-								</manifest>
-							</archive>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
-							<finalName>dmmc-do</finalName>
-							<appendAssemblyId>false</appendAssemblyId>
-						</configuration>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>mine-and-detect</id>
-						<configuration>
-							<archive>
-								<manifest>
-									<mainClass>de.tud.stg.mubench.MineAndDetectRunner</mainClass>
+									<mainClass>de.tud.stg.mubench.Runner</mainClass>
 								</manifest>
 							</archive>
 							<descriptorRefs>
