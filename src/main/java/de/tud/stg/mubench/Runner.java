@@ -3,54 +3,44 @@ package de.tud.stg.mubench;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import de.tu_darmstadt.stg.mubench.cli.ArgParser;
-import de.tu_darmstadt.stg.mubench.cli.DetectorArgs;
+import de.tu_darmstadt.stg.mubench.cli.CodePath;
 import de.tu_darmstadt.stg.mubench.cli.DetectorFinding;
 import de.tu_darmstadt.stg.mubench.cli.DetectorOutput;
+import de.tu_darmstadt.stg.mubench.cli.MuBenchRunner;
 import de.tud.stg.analysis.DatasetReader;
 import de.tud.stg.analysis.ObjectTrace;
 import de.tud.stg.analysis.engine.EcoopEngine;
 import typeusage.miner.FileTypeUsageCollector;
 import typeusage.miner.TypeUsage;
 
-public class Runner {
+public class Runner extends MuBenchRunner {
 
 	public static void main(String[] args) throws Exception {
-		DetectorArgs detectorArgs = ArgParser.parse(args);
-		switch (detectorArgs.getDetectorMode()) {
-		case DETECT_ONLY:
-			detectOnly(detectorArgs);
-			break;
-		case MINE_AND_DETECT:
-			mineAndDetect(detectorArgs);
-			break;
-		default:
-			throw new IllegalArgumentException("Unsupported runmode");
-		}
+		new Runner().run(args);
 	}
 
-	public static void detectOnly(DetectorArgs detectorArgs) throws FileNotFoundException, Exception, IOException {
-		final String targetClassPath = detectorArgs.getTargetClassPath();
-		final String trainingClassPath = detectorArgs.getTrainingClassPath();
-		final String trainingSrcPath = detectorArgs.getTrainingSrcPath();
-		String findingsFile = detectorArgs.getFindingsFile();
-		String modelFilename = new File(new File(findingsFile).getParent(), "model.dat").getAbsolutePath();
+	protected void detectOnly(CodePath patternPath, CodePath targetPath, DetectorOutput output) throws Exception {
+		String modelFilename = Files.createTempFile("model", ".dat").toString();
+		final String targetClassPath = targetPath.classPath;
+		final String trainingClassPath = patternPath.classPath;
+		final String trainingSrcPath = patternPath.srcPath;
 
 		final int patternFrequency = 50;
 		double minStrangeness = 0.01;
 		int maxNumberOfMissingCalls = Integer.MAX_VALUE;
-		
+
 		FileTypeUsageCollector collector = new FileTypeUsageCollector(modelFilename) {
 			@Override
 			protected String[] buildSootArgs() {
 				return generateRunArgs(targetClassPath, trainingClassPath, patternFrequency);
 			}
-			
+
 			@Override
 			public void receive(TypeUsage t) {
 				int numberOfCopies = isFromPattern(trainingSrcPath, t) ? patternFrequency : 1;
@@ -59,35 +49,32 @@ public class Runner {
 				}
 			}
 		};
-		run(detectorArgs, modelFilename, collector, minStrangeness, maxNumberOfMissingCalls);
+		run(output, modelFilename, collector, minStrangeness, maxNumberOfMissingCalls);
 	}
 
 	private static String[] generateRunArgs(String misuseClasspath, String patternClasspath, int patternFrequency) {
 		return new String[] { "-soot-classpath", misuseClasspath + ":" + patternClasspath,
 				"-pp", /* prepend is not required */
-				"-process-dir", misuseClasspath, "-process-dir", patternClasspath
-		};
+				"-process-dir", misuseClasspath, "-process-dir", patternClasspath };
 	}
-	
+
 	private static boolean isFromPattern(String patternsSrcPath, TypeUsage t) {
 		String location = t.getLocation().split(":")[0];
 		String fileName = DetectorFinding.convertFQNtoFileName(location);
 		return new File(patternsSrcPath, fileName).exists();
 	}
 
-	public static void mineAndDetect(DetectorArgs detectorArgs) throws FileNotFoundException, Exception, IOException {
-		String targetClassPath = detectorArgs.getTargetClassPath();
-		String modelFilename = new File(new File(detectorArgs.getFindingsFile()).getParent(), "output.dat")
-				.getAbsolutePath();
+	protected void mineAndDetect(CodePath trainingAndTargetPath, DetectorOutput output) throws Exception {
+		String modelFilename = Files.createTempFile("output", ".dat").toString();
 		FileTypeUsageCollector collector = new FileTypeUsageCollector(modelFilename);
-		collector.setDirToProcess(targetClassPath);
-		Runner.run(detectorArgs, modelFilename, collector,
+		collector.setDirToProcess(trainingAndTargetPath.classPath);
+		Runner.run(output, modelFilename, collector,
 				// using values from the paper
 				/* strangeness threshold = */ 0.5,
 				/* maximum number of missing calls = */ 1);
 	}
-	
-	public static void run(DetectorArgs detectorArgs, String modelFilename, FileTypeUsageCollector usageCollector,
+
+	public static void run(DetectorOutput output, String modelFilename, FileTypeUsageCollector usageCollector,
 			double minStrangeness, int maxNumberOfMissingCalls) throws Exception, IOException, FileNotFoundException {
 		try {
 			usageCollector.run();
@@ -95,12 +82,11 @@ public class Runner {
 			usageCollector.close();
 		}
 
-		Runner.detect(modelFilename, detectorArgs.getFindingsFile(), minStrangeness, maxNumberOfMissingCalls);
+		Runner.detect(modelFilename, output, minStrangeness, maxNumberOfMissingCalls);
 	}
 
-	static void detect(String modelFilename, String outputFile, double minStrangeness, int maxNumberOfMissingCalls)
+	static void detect(String modelFilename, DetectorOutput output, double minStrangeness, int maxNumberOfMissingCalls)
 			throws IOException, Exception {
-		DetectorOutput output = new DetectorOutput(outputFile);
 		List<ObjectTrace> dataset = new DatasetReader().readObjects(modelFilename);
 		EcoopEngine engine = new EcoopEngine(dataset);
 		engine.dontConsiderContext();
@@ -121,8 +107,6 @@ public class Runner {
 			System.out.println();
 			nanalyzed++;
 		}
-
-		output.write();
 	}
 
 	private static void addFinding(DetectorOutput output, ObjectTrace target) throws IOException {
