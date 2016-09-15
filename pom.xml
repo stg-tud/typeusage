@@ -56,7 +56,7 @@
 						<configuration>
 							<archive>
 								<manifest>
-									<mainClass>de.tud.stg.mubench.Runner</mainClass>
+									<mainClass>de.tud.stg.mubench.DMMCRunner</mainClass>
 								</manifest>
 							</archive>
 							<descriptorRefs>
@@ -82,6 +82,11 @@
       <name>soot</name>
       <url>http://conjars.org/repo</url>
     </repository>
+	<repository>
+		<id>stg-mubench</id>
+		<name>MuBench</name>
+		<url>http://www.st.informatik.tu-darmstadt.de/artifacts/mubench/mvn/</url>
+	</repository>
   </repositories>
 
 

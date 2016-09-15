@@ -19,10 +19,10 @@ import de.tud.stg.analysis.engine.EcoopEngine;
 import typeusage.miner.FileTypeUsageCollector;
 import typeusage.miner.TypeUsage;
 
-public class Runner extends MuBenchRunner {
+public class DMMCRunner extends MuBenchRunner {
 
 	public static void main(String[] args) throws Exception {
-		new Runner().run(args);
+		new DMMCRunner().run(args);
 	}
 
 	protected void detectOnly(CodePath patternPath, CodePath targetPath, DetectorOutput output) throws Exception {
@@ -68,7 +68,7 @@ public class Runner extends MuBenchRunner {
 		String modelFilename = Files.createTempFile("output", ".dat").toString();
 		FileTypeUsageCollector collector = new FileTypeUsageCollector(modelFilename);
 		collector.setDirToProcess(trainingAndTargetPath.classPath);
-		Runner.run(output, modelFilename, collector,
+		run(output, modelFilename, collector,
 				// using values from the paper
 				/* strangeness threshold = */ 0.5,
 				/* maximum number of missing calls = */ 1);
@@ -82,7 +82,7 @@ public class Runner extends MuBenchRunner {
 			usageCollector.close();
 		}
 
-		Runner.detect(modelFilename, output, minStrangeness, maxNumberOfMissingCalls);
+		detect(modelFilename, output, minStrangeness, maxNumberOfMissingCalls);
 	}
 
 	static void detect(String modelFilename, DetectorOutput output, double minStrangeness, int maxNumberOfMissingCalls)
