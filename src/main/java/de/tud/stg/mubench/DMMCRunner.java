@@ -13,6 +13,7 @@ import typeusage.miner.TypeUsage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -94,6 +95,7 @@ public class DMMCRunner extends MuBenchRunner {
 		int nanalyzed = 0;
 
 		System.out.println("finding usages with a strangeness of more than " + minStrangeness + "...");
+        List<ObjectTrace> findings = new ArrayList<>();
 		for (ObjectTrace record : dataset) {
 			System.out.print(nanalyzed + "/" + dataset.size());
 
@@ -101,12 +103,18 @@ public class DMMCRunner extends MuBenchRunner {
 			double strangeness = record.strangeness();
 			if (strangeness >= minStrangeness) {
 				System.out.print(" -> violation!");
-				addFinding(output, record);
+				findings.add(record);
 			}
 			System.out.println();
 			nanalyzed++;
 		}
-	}
+
+		findings.sort((f1, f2) -> Double.compare(f2.strangeness(), f1.strangeness()));
+
+        for (ObjectTrace finding : findings) {
+            addFinding(output, finding);
+        }
+    }
 
 	private static void addFinding(DetectorOutput output, ObjectTrace target) throws IOException {
 		String file = getSourceFileName(target);
