@@ -1,14 +1,5 @@
 package de.tud.stg.mubench;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import de.tu_darmstadt.stg.mubench.cli.CodePath;
 import de.tu_darmstadt.stg.mubench.cli.DetectorFinding;
 import de.tu_darmstadt.stg.mubench.cli.DetectorOutput;
@@ -18,6 +9,14 @@ import de.tud.stg.analysis.ObjectTrace;
 import de.tud.stg.analysis.engine.EcoopEngine;
 import typeusage.miner.FileTypeUsageCollector;
 import typeusage.miner.TypeUsage;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DMMCRunner extends MuBenchRunner {
 
@@ -38,7 +37,7 @@ public class DMMCRunner extends MuBenchRunner {
 		FileTypeUsageCollector collector = new FileTypeUsageCollector(modelFilename) {
 			@Override
 			protected String[] buildSootArgs() {
-				return generateRunArgs(targetClassPath, trainingClassPath, patternFrequency);
+				return generateRunArgs(targetClassPath, trainingClassPath);
 			}
 
 			@Override
@@ -52,7 +51,7 @@ public class DMMCRunner extends MuBenchRunner {
 		run(output, modelFilename, collector, minStrangeness, maxNumberOfMissingCalls);
 	}
 
-	private static String[] generateRunArgs(String misuseClasspath, String patternClasspath, int patternFrequency) {
+	private static String[] generateRunArgs(String misuseClasspath, String patternClasspath) {
 		return new String[] { "-soot-classpath", misuseClasspath + ":" + patternClasspath,
 				"-pp", /* prepend is not required */
 				"-process-dir", misuseClasspath, "-process-dir", patternClasspath };
@@ -74,8 +73,8 @@ public class DMMCRunner extends MuBenchRunner {
 				/* maximum number of missing calls = */ 1);
 	}
 
-	public static void run(DetectorOutput output, String modelFilename, FileTypeUsageCollector usageCollector,
-			double minStrangeness, int maxNumberOfMissingCalls) throws Exception, IOException, FileNotFoundException {
+	private static void run(DetectorOutput output, String modelFilename, FileTypeUsageCollector usageCollector,
+							double minStrangeness, int maxNumberOfMissingCalls) throws Exception {
 		try {
 			usageCollector.run();
 		} finally {
@@ -85,8 +84,8 @@ public class DMMCRunner extends MuBenchRunner {
 		detect(modelFilename, output, minStrangeness, maxNumberOfMissingCalls);
 	}
 
-	static void detect(String modelFilename, DetectorOutput output, double minStrangeness, int maxNumberOfMissingCalls)
-			throws IOException, Exception {
+	private static void detect(String modelFilename, DetectorOutput output, double minStrangeness, int maxNumberOfMissingCalls)
+			throws Exception {
 		List<ObjectTrace> dataset = new DatasetReader().readObjects(modelFilename);
 		EcoopEngine engine = new EcoopEngine(dataset);
 		engine.dontConsiderContext();
@@ -121,7 +120,7 @@ public class DMMCRunner extends MuBenchRunner {
 		finding.put("strangeness", Double.toString(target.strangeness()));
 	}
 
-	public static String getType(ObjectTrace target) {
+	private static String getType(ObjectTrace target) {
 		return target.getType().split(":")[1];
 	}
 
@@ -134,20 +133,14 @@ public class DMMCRunner extends MuBenchRunner {
 		}
 	}
 
-	public static Set<String> getPresentCalls(ObjectTrace target) {
-		Set<String> presentCalls = new HashSet<String>();
-		for (String call : target.calls) {
-			presentCalls.add(call.split(":")[1]);
-		}
-		return presentCalls;
+	private static Set<String> getPresentCalls(ObjectTrace target) {
+		return target.calls.stream().map(call -> call.split(":")[1]).collect(Collectors.toSet());
 	}
 
-	public static List<String> getMissingCalls(ObjectTrace target) {
-		List<String> missingcalls = new LinkedList<String>();
-		for (String missingcall : target.missingcalls.keySet()) {
-			missingcalls.add(missingcall.split(":")[1]);
-		}
-		return missingcalls;
+	private static List<String> getMissingCalls(ObjectTrace target) {
+		return target.missingcalls.keySet().stream()
+				.map(missingcall -> missingcall.split(":")[1])
+				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
 	private static String getSourceFileName(ObjectTrace target) {
