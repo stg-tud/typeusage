@@ -51,7 +51,7 @@ public class DMMCRunner extends MuBenchRunner {
 			}
 		};
 		run(output, modelFilename, collector, minStrangeness, maxNumberOfMissingCalls,
-				usage -> isFromPattern(trainingSrcPath, usage.getLocation()));
+				usage -> !isFromPattern(trainingSrcPath, usage.getLocation()));
 	}
 
 	private static String[] generateRunArgs(String misuseClasspath, String patternClasspath) {
@@ -61,7 +61,7 @@ public class DMMCRunner extends MuBenchRunner {
 	}
 
 	private static boolean isFromPattern(String patternsSrcPath, String s) {
-		String location = s.split(":")[0];
+		String location = s.split(":")[s.startsWith("location:") ? 1 : 0];
 		String fileName = DetectorFinding.convertFQNtoFileName(location);
 		return new File(patternsSrcPath, fileName).exists();
 	}
