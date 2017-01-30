@@ -156,7 +156,12 @@ public class DMMCRunner extends MuBenchRunner {
 	}
 
 	private static String getMethodName(ObjectTrace target) {
-		return target.getContext().split(":")[1].replace(",", ", ");
+		String methodName = target.getContext().split(":")[1].replace(",", ", ");
+		if (methodName.startsWith("<init>")) {
+            String typeName = target.getType().substring(target.getType().lastIndexOf(".") + 1);
+            methodName = typeName + methodName.substring("<init>".length());
+        }
+		return methodName;
 	}
 
 }
