@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DMMCRunner extends MuBenchRunner {
@@ -43,13 +44,14 @@ public class DMMCRunner extends MuBenchRunner {
 
 			@Override
 			public void receive(TypeUsage t) {
-				int numberOfCopies = isFromPattern(trainingSrcPath, t) ? patternFrequency : 1;
+				int numberOfCopies = isFromPattern(trainingSrcPath, t.getLocation()) ? patternFrequency : 1;
 				for (int i = 0; i < numberOfCopies; i++) {
 					super.receive(t);
 				}
 			}
 		};
-		run(output, modelFilename, collector, minStrangeness, maxNumberOfMissingCalls);
+		run(output, modelFilename, collector, minStrangeness, maxNumberOfMissingCalls,
+				usage -> isFromPattern(trainingSrcPath, usage.getLocation()));
 	}
 
 	private static String[] generateRunArgs(String misuseClasspath, String patternClasspath) {
@@ -58,8 +60,8 @@ public class DMMCRunner extends MuBenchRunner {
 				"-process-dir", misuseClasspath, "-process-dir", patternClasspath };
 	}
 
-	private static boolean isFromPattern(String patternsSrcPath, TypeUsage t) {
-		String location = t.getLocation().split(":")[0];
+	private static boolean isFromPattern(String patternsSrcPath, String s) {
+		String location = s.split(":")[0];
 		String fileName = DetectorFinding.convertFQNtoFileName(location);
 		return new File(patternsSrcPath, fileName).exists();
 	}
@@ -71,21 +73,25 @@ public class DMMCRunner extends MuBenchRunner {
 		run(output, modelFilename, collector,
 				// using values from the paper
 				/* strangeness threshold = */ 0.5,
-				/* maximum number of missing calls = */ 1);
+				/* maximum number of missing calls = */ 1,
+				usage -> true);
 	}
 
 	private static void run(DetectorOutput output, String modelFilename, FileTypeUsageCollector usageCollector,
-							double minStrangeness, int maxNumberOfMissingCalls) throws Exception {
+							double minStrangeness, int maxNumberOfMissingCalls,
+							Predicate<ObjectTrace> targetUsage) throws Exception {
 		try {
 			usageCollector.run();
 		} finally {
 			usageCollector.close();
 		}
 
-		detect(modelFilename, output, minStrangeness, maxNumberOfMissingCalls);
+		detect(modelFilename, output, minStrangeness, maxNumberOfMissingCalls, targetUsage);
 	}
 
-	private static void detect(String modelFilename, DetectorOutput output, double minStrangeness, int maxNumberOfMissingCalls)
+	private static void detect(String modelFilename, DetectorOutput output,
+							   double minStrangeness, int maxNumberOfMissingCalls,
+							   Predicate<ObjectTrace> targetUsage)
 			throws Exception {
 		List<ObjectTrace> dataset = new DatasetReader().readObjects(modelFilename);
 		EcoopEngine engine = new EcoopEngine(dataset);
@@ -99,11 +105,13 @@ public class DMMCRunner extends MuBenchRunner {
 		for (ObjectTrace record : dataset) {
 			System.out.print(nanalyzed + "/" + dataset.size());
 
-			engine.query(record);
-			double strangeness = record.strangeness();
-			if (strangeness >= minStrangeness) {
-				System.out.print(" -> violation!");
-				findings.add(record);
+			if (targetUsage.test(record)) {
+				engine.query(record);
+				double strangeness = record.strangeness();
+				if (strangeness >= minStrangeness) {
+					System.out.print(" -> violation!");
+					findings.add(record);
+				}
 			}
 			System.out.println();
 			nanalyzed++;
