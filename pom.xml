@@ -62,7 +62,7 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
-							<finalName>dmmc</finalName>
+							<finalName>DMMC</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 						</configuration>
 						<phase>package</phase>
