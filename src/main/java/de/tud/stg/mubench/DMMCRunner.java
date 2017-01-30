@@ -60,10 +60,14 @@ public class DMMCRunner extends MuBenchRunner {
 				"-process-dir", misuseClasspath, "-process-dir", patternClasspath };
 	}
 
-	private static boolean isFromPattern(String patternsSrcPath, String s) {
-		String location = s.split(":")[s.startsWith("location:") ? 1 : 0];
-		String fileName = DetectorFinding.convertFQNtoFileName(location);
+	private static boolean isFromPattern(String patternsSrcPath, String location) {
+		String typeName = convertLocationToFQN(location);
+		String fileName = DetectorFinding.convertFQNtoFileName(typeName);
 		return new File(patternsSrcPath, fileName).exists();
+	}
+
+	private static String convertLocationToFQN(String location) {
+		return location.split(":")[location.startsWith("location:") ? 1 : 0];
 	}
 
 	protected void mineAndDetect(CodePath trainingAndTargetPath, DetectorOutput output) throws Exception {
@@ -160,13 +164,14 @@ public class DMMCRunner extends MuBenchRunner {
 	}
 
 	private static String getSourceFileName(ObjectTrace target) {
-		return DetectorFinding.convertFQNtoFileName(target.getLocation().split(":")[1]);
+		return DetectorFinding.convertFQNtoFileName(convertLocationToFQN(target.getLocation()));
 	}
 
 	private static String getMethodName(ObjectTrace target) {
 		String methodName = target.getContext().split(":")[1].replace(",", ", ");
 		if (methodName.startsWith("<init>")) {
-            String typeName = target.getType().substring(target.getType().lastIndexOf(".") + 1);
+            String typeName = convertLocationToFQN(target.getLocation());
+			typeName = typeName.substring(typeName.lastIndexOf(".") + 1);
             methodName = typeName + methodName.substring("<init>".length());
         }
 		return methodName;
