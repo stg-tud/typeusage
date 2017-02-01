@@ -51,7 +51,7 @@ public class DMMCRunner extends MuBenchRunner {
 			}
 		};
 		run(output, modelFilename, collector, minStrangeness, maxNumberOfMissingCalls,
-				usage -> !isFromPattern(trainingSrcPath, usage.getLocation()));
+				usage -> !isFromPattern(trainingSrcPath, usage.getLocation()), false);
 	}
 
 	private static String[] generateRunArgs(String misuseClasspath, String patternClasspath) {
@@ -78,27 +78,29 @@ public class DMMCRunner extends MuBenchRunner {
 				// using values from the paper
 				/* strangeness threshold = */ 0.5,
 				/* maximum number of missing calls = */ 1,
-				usage -> true);
+				usage -> true, true);
 	}
 
 	private static void run(DetectorOutput output, String modelFilename, FileTypeUsageCollector usageCollector,
 							double minStrangeness, int maxNumberOfMissingCalls,
-							Predicate<ObjectTrace> targetUsage) throws Exception {
+							Predicate<ObjectTrace> targetUsage, boolean filterMissingMethodsWithSmallSupport) throws Exception {
 		try {
 			usageCollector.run();
 		} finally {
 			usageCollector.close();
 		}
 
-		detect(modelFilename, output, minStrangeness, maxNumberOfMissingCalls, targetUsage);
+		detect(modelFilename, output, minStrangeness, maxNumberOfMissingCalls, targetUsage, filterMissingMethodsWithSmallSupport);
 	}
 
 	private static void detect(String modelFilename, DetectorOutput output,
 							   double minStrangeness, int maxNumberOfMissingCalls,
-							   Predicate<ObjectTrace> targetUsage)
+							   Predicate<ObjectTrace> targetUsage,
+							   boolean filterMissingMethodsWithSmallSupport)
 			throws Exception {
 		List<ObjectTrace> dataset = new DatasetReader().readObjects(modelFilename);
 		EcoopEngine engine = new EcoopEngine(dataset);
+		engine.option_filterIsEnabled = filterMissingMethodsWithSmallSupport;
 		engine.dontConsiderContext();
 		engine.setOption_k(maxNumberOfMissingCalls);
 
