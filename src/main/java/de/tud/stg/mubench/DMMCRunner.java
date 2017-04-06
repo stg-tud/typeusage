@@ -1,9 +1,6 @@
 package de.tud.stg.mubench;
 
-import de.tu_darmstadt.stg.mubench.cli.CodePath;
-import de.tu_darmstadt.stg.mubench.cli.DetectorFinding;
-import de.tu_darmstadt.stg.mubench.cli.DetectorOutput;
-import de.tu_darmstadt.stg.mubench.cli.MuBenchRunner;
+import de.tu_darmstadt.stg.mubench.cli.*;
 import de.tud.stg.analysis.DatasetReader;
 import de.tud.stg.analysis.ObjectTrace;
 import de.tud.stg.analysis.engine.EcoopEngine;
@@ -26,11 +23,12 @@ public class DMMCRunner extends MuBenchRunner {
 		new DMMCRunner().run(args);
 	}
 
-	protected void detectOnly(CodePath patternPath, CodePath targetPath, DetectorOutput output) throws Exception {
+	@Override
+	protected void detectOnly(DetectorArgs args, DetectorOutput output) throws Exception {
 		String modelFilename = Files.createTempFile("model", ".dat").toString();
-		final String targetClassPath = targetPath.classPath;
-		final String trainingClassPath = patternPath.classPath;
-		final String trainingSrcPath = patternPath.srcPath;
+		final String targetClassPath = args.getTargetPath().classPath;
+		final String trainingClassPath = args.getPatternPath().classPath;
+		final String trainingSrcPath = args.getPatternPath().srcPath;
 
 		final int patternFrequency = 50;
 		double minStrangeness = 0.01;
@@ -70,10 +68,11 @@ public class DMMCRunner extends MuBenchRunner {
 		return location.split(":")[location.startsWith("location:") ? 1 : 0];
 	}
 
-	protected void mineAndDetect(CodePath trainingAndTargetPath, DetectorOutput output) throws Exception {
+	@Override
+	protected void mineAndDetect(DetectorArgs args, DetectorOutput output) throws Exception {
 		String modelFilename = Files.createTempFile("output", ".dat").toString();
 		FileTypeUsageCollector collector = new FileTypeUsageCollector(modelFilename);
-		collector.setDirToProcess(trainingAndTargetPath.classPath);
+		collector.setDirToProcess(args.getTargetPath().classPath);
 		run(output, modelFilename, collector,
 				// using values from the paper
 				/* strangeness threshold = */ 0.5,
@@ -169,7 +168,7 @@ public class DMMCRunner extends MuBenchRunner {
 		return DetectorFinding.convertFQNtoFileName(convertLocationToFQN(target.getLocation()));
 	}
 
-	private static String getMethodName(ObjectTrace target) {
+	public static String getMethodName(ObjectTrace target) {
 		String methodName = target.getContext().split(":")[1].replace(",", ", ");
 		if (methodName.startsWith("<init>")) {
             String typeName = convertLocationToFQN(target.getLocation());
