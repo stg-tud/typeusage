@@ -174,6 +174,7 @@ public class DMMCRunner extends MuBenchRunner {
 		if (methodName.startsWith("<init>")) {
             String typeName = convertLocationToFQN(target.getLocation());
 			typeName = typeName.substring(typeName.lastIndexOf(".") + 1);
+			typeName = typeName.substring(typeName.lastIndexOf("$") + 1);
             methodName = typeName + methodName.substring("<init>".length());
         }
 		return methodName;
