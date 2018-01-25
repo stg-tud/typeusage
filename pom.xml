@@ -1,93 +1,86 @@
-  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>typeusage</groupId>
-  <artifactId>typeusage</artifactId>
-  <version>0.1</version>
-  <name>typeusage</name>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.tu-darmstadt.stg.mubench.runners</groupId>
+    <artifactId>dmmc</artifactId>
+    <version>0.1</version>
+    <name>DMMC MUBench Runner</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-    </dependency>
+    <repositories>
+        <repository>
+            <id>soot</id>
+            <name>soot</name>
+            <url>http://conjars.org/repo</url>
+        </repository>
+        <repository>
+            <id>stg-mubench</id>
+            <name>MuBench</name>
+            <url>http://www.st.informatik.tu-darmstadt.de/artifacts/mubench/mvn/</url>
+        </repository>
+    </repositories>
 
-    <dependency>
-      <groupId>soot</groupId>
-      <artifactId>soot</artifactId>
-      <version>2.5.0</version>
-    </dependency>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+        </dependency>
+        <dependency>
+            <groupId>soot</groupId>
+            <artifactId>soot</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>de.tu-darmstadt.stg</groupId>
+            <artifactId>mubench.cli</artifactId>
+            <version>0.0.11</version>
+        </dependency>
+    </dependencies>
 
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>2.4</version>
-    </dependency>
-
-    <dependency>
-    	<groupId>commons-io</groupId>
-    	<artifactId>commons-io</artifactId>
-    	<version>2.5</version>
-    </dependency>
-    
-    <dependency>
-			<groupId>de.tu-darmstadt.stg</groupId>
-			<artifactId>mubench.cli</artifactId>
-			<version>0.0.11</version>
-	</dependency>
-  </dependencies>
-
-  <build>
-
-    <plugins>
-       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-       </plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>dmmc</id>
-						<configuration>
-							<archive>
-								<manifest>
-									<mainClass>de.tud.stg.mubench.DMMCRunner</mainClass>
-								</manifest>
-							</archive>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
-							<finalName>DMMC</finalName>
-							<appendAssemblyId>false</appendAssemblyId>
-						</configuration>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-    </plugins>
-  </build>
-
-  
-  <repositories>
-    <repository>
-      <id>soot</id>
-      <name>soot</name>
-      <url>http://conjars.org/repo</url>
-    </repository>
-	<repository>
-		<id>stg-mubench</id>
-		<name>MuBench</name>
-		<url>http://www.st.informatik.tu-darmstadt.de/artifacts/mubench/mvn/</url>
-	</repository>
-  </repositories>
-
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dmmc</id>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>de.tud.stg.mubench.DMMCRunner</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <finalName>DMMC</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
