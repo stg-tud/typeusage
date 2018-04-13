@@ -49,7 +49,9 @@ public class DMMC {
         System.out.println("finding usages with a strangeness of more than " + minStrangeness + "...");
         List<ObjectTrace> violations = new ArrayList<>();
         for (ObjectTrace record : dataset) {
-            if (getSourceFileName(record).contains("org/jfree/chart/util/ShapeUtilities.java") && getMethodName(record).contains("equal(GeneralPath, GeneralPath)")) {
+            DMMCMethodIdentifier methodIdentifier = new DMMCMethodIdentifier(record);
+            if (methodIdentifier.getSourceFilePath().contains("org/jfree/chart/util/ShapeUtilities.java") &&
+                    methodIdentifier.getSignature().contains("equal(GeneralPath, GeneralPath)")) {
                 System.out.println("found it!");
             }
             System.out.print(nanalyzed + "/" + dataset.size());
@@ -76,28 +78,16 @@ public class DMMC {
     }
 
     private static DetectorFinding toFinding(ObjectTrace target) throws IOException {
-        String file = getSourceFileName(target);
-        String method = getMethodName(target);
+        DMMCMethodIdentifier methodIdentifier = new DMMCMethodIdentifier(target);
+        String file = methodIdentifier.getSourceFilePath();
+        String method = methodIdentifier.getSignature();
         DetectorFinding finding = new DetectorFinding(file, method);
-        finding.put("type", getType(target));
-        finding.put("firstcallline", getFirstCallLine(target));
+        finding.put("type", methodIdentifier.getDeclaringTypeName());
+        finding.put("firstcallline", methodIdentifier.getLine());
         finding.put("presentcalls", getPresentCalls(target));
         finding.put("missingcalls", getMissingCalls(target));
         finding.put("strangeness", Double.toString(target.strangeness()));
         return finding;
-    }
-
-    private static String getType(ObjectTrace target) {
-        return target.getType().split(":")[1];
-    }
-
-    private static String getFirstCallLine(ObjectTrace target) {
-        String[] locationInfo = target.getLocation().split(":");
-        if (locationInfo.length > 2) {
-            return locationInfo[2];
-        } else {
-            return "unknown";
-        }
     }
 
     private static Set<String> getPresentCalls(ObjectTrace target) {
@@ -110,18 +100,4 @@ public class DMMC {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    private static String getSourceFileName(ObjectTrace target) {
-        return new Location(target.getLocation()).toSourceFileName();
-    }
-
-    public static String getMethodName(ObjectTrace target) {
-        String methodName = target.getContext().split(":")[1].replace(",", ", ");
-        if (methodName.startsWith("<init>")) {
-            String typeName = new Location(target.getLocation()).toFullyQualifiedName().toString();
-            typeName = typeName.substring(typeName.lastIndexOf(".") + 1);
-            typeName = typeName.substring(typeName.lastIndexOf("$") + 1);
-            methodName = typeName + methodName.substring("<init>".length());
-        }
-        return methodName;
-    }
 }
